@@ -46,7 +46,7 @@ pipeline {
             steps {
                 script{
                     sh "nohup bash ./mvnw spring-boot:run &"
-                    sh "nohup bash newman run 'home/ejemplo-maven.postman_collection.json'"
+                    sh "newman run home/ejemplo-maven.postman_collection.json  -n 10  --delay-request 1000"
                 }
             }
         }
