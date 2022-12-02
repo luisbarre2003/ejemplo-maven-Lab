@@ -42,14 +42,6 @@ pipeline {
                 }
             }
         }
-        stage("Paso 3.2: levantar maven "){
-            steps {
-                script{
-                    sh "./mvnw spring-boot:run &"
-                    sh "newman run 'home/ejemplo-maven.postman_collection.json'  -n 10  --delay-request 1000"
-                }
-            }
-        }
         stage("Paso 4: Detener Spring Boot"){
             steps {
                 script{
@@ -58,6 +50,15 @@ pipeline {
                         sleep 20
                         kill -9 $(pidof java | awk '{print $1}')
                     '''
+                }
+            }
+        }
+
+        stage("Paso 4.2: levantar newman "){
+            steps {
+                script{
+                    sh "nohup bash ./mvnw spring-boot:run &"
+                    sh " newman run 'home/ejemplo-maven.postman_collection.json'  -n 10  --delay-request 1000;"
                 }
             }
         }
