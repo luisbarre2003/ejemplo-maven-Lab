@@ -45,8 +45,8 @@ pipeline {
         stage("Paso 3.2: levantar maven "){
             steps {
                 script{
-                    sh "./mvnw spring-boot:run"
-                    sh "newman run 'ejemplo-maven.postman_collection.json'"
+                    sh "nohup bash ./mvnw spring-boot:run &"
+                    sh "nohup bash newman run 'home/ejemplo-maven.postman_collection.json'"
                 }
             }
         }
