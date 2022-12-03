@@ -113,7 +113,7 @@ pipeline {
         stage("Paso 10: levantar newman "){
             steps {
                 script{
-                    sh "nohup bash ./mvnw spring-boot:run &"
+                    sh "nohup bash ./mvnw spring-boot:run  & >/dev/null"
                     sh " newman run ejemplo-maven.postman.json; "
                 }
             }
