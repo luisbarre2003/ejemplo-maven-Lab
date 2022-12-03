@@ -39,6 +39,7 @@ pipeline {
                 script{
                     sh "nohup bash ./mvnw spring-boot:run  & >/dev/null"
                     sh "sleep 20 && curl -X GET 'http://localhost:8081/rest/mscovid/test?msg=testing'"
+                    sh " newman run ejemplo-maven.postman.json; "
                 }
             }
         }
@@ -108,14 +109,6 @@ pipeline {
                     sleep 20
                     kill -9 $(pidof java | awk '{print $1}')
                 '''
-            }
-        }
-        stage("Paso 10: levantar newman "){
-            steps {
-                script{
-                    sh "nohup bash ./mvnw spring-boot:run  & >/dev/null"
-                    sh " newman run ejemplo-maven.postman.json; "
-                }
             }
         }
     }
