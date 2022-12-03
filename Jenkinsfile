@@ -58,7 +58,7 @@ pipeline {
             steps {
                 script{
                     sh "nohup bash ./mvnw spring-boot:run &"
-                    sh " newman run '/tmp/ejemplo-maven.postman.json'; "
+                    sh " newman run ejemplo-maven.postman.json; "
                 }
             }
         }
