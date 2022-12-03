@@ -17,7 +17,7 @@
 							"    pm.expect(pm.response).to.have.code(200);",
 							"});",
 							"",
-							"pm.test(\"Response time is less than 200ms\", function () {",
+							"pm.test(\"Response time is less than 10000ms\", function () {",
 							"    pm.expect(pm.response.responseTime).to.be.below(10000);",
 							"});"
 						],
@@ -105,7 +105,7 @@
 							"    pm.expect(pm.response).to.have.code(200);",
 							"});",
 							"",
-							"pm.test(\"Response time is less than 200ms\", function () {",
+							"pm.test(\"Response time is less than 10000ms\", function () {",
 							"    pm.expect(pm.response.responseTime).to.be.below(10000);",
 							"});"
 						],
@@ -155,7 +155,7 @@
 							"    pm.expect(pm.response).to.have.code(200);",
 							"});",
 							"",
-							"pm.test(\"Response time is less than 200ms\", function () {",
+							"pm.test(\"Response time is less than 10000ms\", function () {",
 							"    pm.expect(pm.response.responseTime).to.be.below(10000);",
 							"});"
 						],
