@@ -34,7 +34,7 @@ pipeline {
             }
         }
         
-        stage("Paso 3: Curl Springboot maven sleep 20"){
+        stage("Paso 3: Curl Springboot maven sleep 20 y newman "){
             steps {
                 script{
                     sh "nohup bash ./mvnw spring-boot:run  & >/dev/null"
