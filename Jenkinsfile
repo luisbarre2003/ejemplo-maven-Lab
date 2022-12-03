@@ -53,16 +53,7 @@ pipeline {
                 }
             }
         }
-
-        stage("Paso 4.2: levantar newman "){
-            steps {
-                script{
-                    sh "nohup bash ./mvnw spring-boot:run &"
-                    sh " newman run ejemplo-maven.postman.json; "
-                }
-            }
-        }
-           stage("Paso 5: Subir Artefacto a Nexus"){
+        stage("Paso 5: Subir Artefacto a Nexus"){
             steps {
                 script{
                     nexusPublisher nexusInstanceId: 'nexus',
@@ -117,6 +108,14 @@ pipeline {
                     sleep 20
                     kill -9 $(pidof java | awk '{print $1}')
                 '''
+            }
+        }
+        stage("Paso 10: levantar newman "){
+            steps {
+                script{
+                    sh "nohup bash ./mvnw spring-boot:run &"
+                    sh " newman run ejemplo-maven.postman.json; "
+                }
             }
         }
     }
