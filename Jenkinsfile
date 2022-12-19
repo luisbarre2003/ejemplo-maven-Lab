@@ -40,6 +40,7 @@ pipeline {
                     sh "nohup bash ./mvnw spring-boot:run  & >/dev/null"
                     sh "sleep 20 && curl -X GET 'http://localhost:8081/rest/mscovid/test?msg=testing'"
                     sh " newman run ejemplo-maven.postman.json; "
+                    sh " newman run apicovid.postman_collection.json; "
                 }
             }
         }
