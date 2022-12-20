@@ -33,7 +33,6 @@ pipeline {
                 }
             }
         }
-        
         stage("Paso 3: stage postman y newman con enviroment "){
             steps {
                 script{
