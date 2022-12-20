@@ -3,8 +3,6 @@ import groovy.json.JsonSlurperClassic
 def jsonParse(def json) {
     new groovy.json.JsonSlurperClassic().parseText(json)
 }
-def lasttag
-
 pipeline {
     agent any
     environment {
@@ -61,16 +59,26 @@ pipeline {
         stage("Paso 5: Subir Artefacto a Nexus"){
             steps {
                 script{
-                    sh 'git fetch --tags'
-                    // lasttag = sh(returnStdout: true, script: 'git describe --abbrev=0 --tags')
-                    lasttag = sh(returnStdout: true, script: 'git describe --tags `git rev-list --tags --max-count=1`')
-                    lasttag = lasttag.trim()
-                    lasttag = lasttag.substring(1)
-                    echo "lasttag: "+lasttag
+                    nexusPublisher nexusInstanceId: 'nexus',
+                        nexusRepositoryId: 'maven-usach-ceres',
+                        packages: [
+                            [$class: 'MavenPackage',
+                                mavenAssetList: [
+                                    [classifier: '',
+                                    extension: 'jar',
+                                    filePath: 'build/DevOpsUsach2020-0.0.1.jar'
+                                ]
+                            ],
+                                mavenCoordinate: [
+                                    artifactId: 'DevOpsUsach2020',
+                                    groupId: 'com.devopsusach2020',
+                                    packaging: 'jar',
+                                    version: '0.0.1'
+                                ]
+                            ]
+                        ]
                 }
-                nexusPublisher nexusInstanceId: 'nexus', nexusRepositoryId: 'maven-usach-ceres', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: './build/DevOpsUsach2020-0.0.1.jar']], mavenCoordinate: [artifactId: 'DevOpsUsach2020', groupId: 'com.devopsusach2020', packaging: 'jar', version: lasttag]]]
             }
-
         }
        stage("Paso 6: Descargar Nexus"){
             steps {
