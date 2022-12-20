@@ -3,25 +3,26 @@ import groovy.json.JsonSlurperClassic
 def jsonParse(def json) {
     new groovy.json.JsonSlurperClassic().parseText(json)
 }
-def lasttag
-
 pipeline {
     agent any
     environment {
         channel='C04BPL2A5E3'
-        NEXUS_PASSWORD     = credentials('nexusid')
-        GIT_AUTH = credentials('tokengit')
-        commitId = sh(returnStdout: true, script: 'git rev-parse HEAD')
-        commitcheck = sh(returnStdout: true, script: '[ "$CHANGE_BRANCH" = "" ] || git rev-parse origin/$CHANGE_BRANCH')
-        result = sh(returnStdout: true, script: 'git log --format=%B HEAD -n1')
-        author = sh(returnStdout: true, script: 'git log --pretty=%an HEAD -n1')
-        GIT_COMMIT_USERNAME = sh (script: 'git show -s --pretty=%an', returnStdout: true ).trim()
-        commitmsg = sh(returnStdout: true, script: 'git log --oneline -n 1 HEAD')
-        projectname = sh(script: 'git remote get-url origin | cut -d "/" -f5', returnStdout: true)
-        commiteremail = sh(returnStdout: true, script: 'git log --pretty=%ae HEAD -n1')
-        jenkinsurl = sh(script: 'echo "${BUILD_URL}"' , returnStdout: true).trim()
+        NEXUS_PASSWORD     = credentials('nexus-password')
     }
     stages {
+        
+        stage("Paso 0: Download Code and checkout"){
+            steps {
+                script{
+                    checkout(
+                            [$class: 'GitSCM',
+                            //Acá reemplazar por el nonbre de branch
+                            branches: [[name: "feature/sonar" ]],
+                            //Acá reemplazar por su propio repositorio
+                            userRemoteConfigs: [[url: 'https://github.com/diplodevops/ejemplo-maven-ceres.git']]])
+                }
+            }
+        }
      
         stage("Paso 1: Build && Test"){
             steps {
@@ -39,19 +40,26 @@ pipeline {
                         withSonarQubeEnv('sonarqube') {
                             sh "echo 'Calling sonar by ID!'"
                             // Run Maven on a Unix agent to execute Sonar.
-                            sh './mvnw clean verify sonar:sonar -Dsonar.projectKey=custom-project-key -Dsonar.projectName=cejemplo-maven-full-stages -Dsonar.java.binaries=build'
+                            sh './mvnw clean verify sonar:sonar -Dsonar.projectKey=ejemplo-maven-full-stages -Dsonar.projectName=cejemplo-maven-full-stages -Dsonar.java.binaries=build'
                         }
                         
                 }
             }
         }
         
-        stage("Paso 3: Curl Springboot maven sleep 20 y newman "){
+        stage("Paso 3: Curl Springboot maven sleep 20"){
             steps {
                 script{
                     sh "nohup bash ./mvnw spring-boot:run  & >/dev/null"
-                   
-                    sh " newman run apicovid_ENV.postman.json -e ENV_API.postman.json; "
+                    sh "sleep 20 && curl -X GET 'http://localhost:8081/rest/mscovid/test?msg=testing'"
+                }
+            }
+        }
+        stage("Paso 3.2: levantar maven "){
+            steps {
+                script{
+                    sh "./mvnw spring-boot:run"
+                    sh "newman run 'ejemplo-maven.postman_collection.json'  -n 10  --delay-request 1000"
                 }
             }
         }
@@ -60,34 +68,41 @@ pipeline {
                 script{
                     sh '''
                         echo 'Process Spring Boot Java: ' $(pidof java | awk '{print $1}')  
-                        
+                        sleep 20
                         kill -9 $(pidof java | awk '{print $1}')
                     '''
                 }
             }
         }
-        stage("Paso 5: Subir Artefacto a Nexus"){
+           stage("Paso 5: Subir Artefacto a Nexus"){
             steps {
                 script{
-                    sh 'git fetch --tags'
-                    // lasttag = sh(returnStdout: true, script: 'git describe --abbrev=0 --tags')
-                    lasttag = sh(returnStdout: true, script: 'git describe --tags $(git rev-list --tags --max-count=1)')
-                    lasttag = lasttag.trim()
-                    lasttag = lasttag.substring(1)
-                    echo "lasttag: "+lasttag                
+                    nexusPublisher nexusInstanceId: 'nexus',
+                        nexusRepositoryId: 'maven-usach-ceres',
+                        packages: [
+                            [$class: 'MavenPackage',
+                                mavenAssetList: [
+                                    [classifier: '',
+                                    extension: 'jar',
+                                    filePath: 'build/DevOpsUsach2020-0.0.1.jar'
+                                ]
+                            ],
+                                mavenCoordinate: [
+                                    artifactId: 'DevOpsUsach2020',
+                                    groupId: 'com.devopsusach2020',
+                                    packaging: 'jar',
+                                    version: '0.0.1'
+                                ]
+                            ]
+                        ]
                 }
-                nexusPublisher nexusInstanceId: 'nexus', nexusRepositoryId: 'maven-usach-ceres', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: './build/DevOpsUsach2020-0.0.1.jar']], mavenCoordinate: [artifactId: 'DevOpsUsach2020', groupId: 'com.devopsusach2020', packaging: 'jar', version: lasttag]]]
             }
-
         }
-       stage("Paso 6: Descargar Nexus"){
+        stage("Paso 6: Descargar Nexus"){
             steps {
-                withCredentials([usernamePassword(credentialsId: 'nexusid', passwordVariable: 'NXS_PASSWORD', usernameVariable: 'NXS_USERNAME')]) {
-                    sh ' curl -X GET -u $NXS_USERNAME:$NXS_PASSWORD "http://nexus:8081/repository/maven-usach-ceres/com/devopsusach2020/DevOpsUsach2020/0.0.1/DevOpsUsach2020-0.0.1.jar" -O'
+                script{
+                    sh ' curl -X GET -u admin:$NEXUS_PASSWORD "http://nexus:8081/repository/maven-usach-ceres/com/devopsusach2020/DevOpsUsach2020/0.0.1/DevOpsUsach2020-0.0.1.jar" -O'
                 }
-                 //script{
-                 //    sh ' curl -X GET -u "http://nexus:8081/repository/maven-usach-ceres/com/devopsusach2020/DevOpsUsach2020/0.0.1/DevOpsUsach2020-0.0.1.jar" -O'
-                 //}
             }
         }
          stage("Paso 7: Levantar Artefacto Jar en server Jenkins"){
