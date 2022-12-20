@@ -41,6 +41,7 @@ pipeline {
                     sh "sleep 20 && curl -X GET 'http://localhost:8081/rest/mscovid/test?msg=testing'"
                     sh " newman run ejemplo-maven.postman.json; "
                     sh " newman run apicovid2.postman_collection.json; "
+                    sh " newman run apicovid_ENV.postman.json -e ENV_API.postman.json; "
                 }
             }
         }
