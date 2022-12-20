@@ -10,6 +10,7 @@ pipeline {
     environment {
         channel='C04BPL2A5E3'
         NEXUS_PASSWORD     = credentials('nexusid')
+        GIT_AUTH = credentials('tokengit')
     }
     stages {
      
