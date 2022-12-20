@@ -37,7 +37,7 @@ pipeline {
         stage("Paso 3: stage postman y newman con enviroment "){
             steps {
                 script{
-                    sh " newman run apicovid_ENV.postman.json -e ENV_API.postman.json; "
+                    sh " newman run apicovid_ENV2.postman.json -e ENV_API.postman.json; "
                 }
             }
         }
