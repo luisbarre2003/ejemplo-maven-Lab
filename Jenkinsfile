@@ -41,7 +41,7 @@ pipeline {
             steps {
                 script{
                     sh "nohup bash ./mvnw spring-boot:run  & >/dev/null"
-                    sh " newman run apicovid2.postman_collection.json; "
+                   
                     sh " newman run apicovid_ENV.postman.json -e ENV_API.postman.json; "
                 }
             }
