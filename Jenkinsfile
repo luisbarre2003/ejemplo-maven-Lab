@@ -65,7 +65,7 @@ pipeline {
                     lasttag = sh(returnStdout: true, script: 'git describe --tags $(git rev-list --tags --max-count=1)')
                     lasttag = lasttag.trim()
                     lasttag = lasttag.substring(1)
-                    echo "lasttag: "+lasttag
+                    echo "lasttag: "+lasttag                
                 }
                 nexusPublisher nexusInstanceId: 'nexus', nexusRepositoryId: 'maven-usach-ceres', packages: [[$class: 'MavenPackage', mavenAssetList: [[classifier: '', extension: '', filePath: './build/DevOpsUsach2020-0.0.1.jar']], mavenCoordinate: [artifactId: 'DevOpsUsach2020', groupId: 'com.devopsusach2020', packaging: 'jar', version: lasttag]]]
             }
